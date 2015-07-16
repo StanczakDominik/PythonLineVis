@@ -35,21 +35,21 @@ def localAction(point, radius=0.0001):
     # print(indices_in_radius)
     print(number_points_inside_radius)
 
-    # fig = plt.gcf()
-    # plt.quiver(r,z,vr,vz, label="Input data")
-    # plt.scatter(r,z, label="Input data", alpha=0.05)
-    # plt.scatter(r[indices_in_radius],z[indices_in_radius],
-    #     label="Input data in circle", alpha=0.5)
-    # plt.plot(point[0], point[1], "bo-", label="plotted point" )
-    # plt.xlabel("r")
-    # plt.ylabel("z")
-    # fig.gca().add_artist(plt.Circle(point, radius, color='g', alpha=0.5))
-    # plt.grid()
-    # plt.legend()
-    # plt.axes().set_aspect('equal', 'datalim')
-    # plt.xlim(point[0]-2*radius, point[0]+2*radius)
-    # plt.ylim(point[1]-2*radius, point[1]+2*radius)
-    # plt.show()
+    fig = plt.gcf()
+    plt.quiver(r[indices_in_radius],z[indices_in_radius],vr[indices_in_radius],vz[indices_in_radius], label="Input data")
+    plt.scatter(r[indices_in_radius],z[indices_in_radius], label="Input data", alpha=0.05)
+    plt.scatter(r[indices_in_radius],z[indices_in_radius],
+        label="Input data in circle", alpha=0.5)
+    plt.plot(point[0], point[1], "bo-", label="plotted point" )
+    plt.xlabel("r")
+    plt.ylabel("z")
+    fig.gca().add_artist(plt.Circle(point, radius, color='g', alpha=0.5))
+    plt.grid()
+    plt.legend()
+    plt.axes().set_aspect('equal', 'datalim')
+    plt.xlim(point[0]-2*radius, point[0]+2*radius)
+    plt.ylim(point[1]-2*radius, point[1]+2*radius)
+    plt.show()
 
     iterations=0
 
@@ -62,7 +62,37 @@ def localAction(point, radius=0.0001):
         localAction(point, radius*1.055)
         iterations+=1
     else:
-        return radius
+        r_distances_inside=r_distances[indices_in_radius]
+        z_distances_inside=z_distances[indices_in_radius]
+        r_velocities_inside=vr[indices_in_radius]
+        z_velocities_inside=vz[indices_in_radius]
+        weights=weight(r_distances_inside, z_distances_inside)
+        weight_sum=np.sum(weights)
+        vr_interpolated=np.sum(weights*r_velocities_inside)/weight_sum
+        vz_interpolated=np.sum(weights*z_velocities_inside)/weight_sum
+        print(vr_interpolated, vz_interpolated)
+        print(r_velocities_inside)
+        print(z_velocities_inside)
+        fig = plt.gcf()
+        plt.quiver(r[indices_in_radius],z[indices_in_radius],vr[indices_in_radius],
+            vz[indices_in_radius], label="Input data")
+        plt.quiver(point[0],point[1],vr_interpolated,vz_interpolated,
+            label="Found point")
+        #plt.scatter(r,z, label="Input data", alpha=0.05)
+        plt.scatter(r[indices_in_radius],z[indices_in_radius],
+            label="Input data in circle", alpha=0.5)
+        plt.plot(point[0], point[1], "bo-", label="plotted point" )
+        plt.xlabel("r")
+        plt.ylabel("z")
+        fig.gca().add_artist(plt.Circle(point, radius, color='g', alpha=0.5))
+        plt.grid()
+        plt.legend()
+        plt.axes().set_aspect('equal', 'datalim')
+        plt.xlim(point[0]-2*radius, point[0]+2*radius)
+        plt.ylim(point[1]-2*radius, point[1]+2*radius)
+        plt.show()
+
+        return np.array([vr_interpolated, vz_interpolated])
 
 
 #read data
