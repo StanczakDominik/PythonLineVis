@@ -131,8 +131,10 @@ vz = B4LINE[:,3]
 fig = plt.gcf()
 plt.quiver(r,z,vr,vz, label="Input data")
 
-StartingZ=np.linspace(min(z)*0.99,max(z)*0.99, 20)#max(z)*0.99,100)
-StartingR=np.linspace(min(r),0.000895139,20)
+# StartingZ=np.linspace(min(z)*0.99,max(z)*0.99, 20)#max(z)*0.99,100)
+# StartingR=np.linspace(min(r),0.000895139,20)
+StartingZ=np.linspace(min(z)*0.99,min(z)*0.985, 2)#max(z)*0.99,100)
+StartingR=np.linspace(min(r),0.0035,100)
 # StartingZ=np.vstack(((np.ones_like(StartingZ)*(max(r)-min(r))/10+min(r)).T, StartingZ.T)).T
 # StartingZ=np.vstack((StartingR.T, StartingZ.T)).T
 def fieldline(point):
@@ -179,5 +181,5 @@ plt.grid()
 plt.legend()
 plt.xlim(min(r),max(r))
 plt.ylim(min(z),max(z))
-plt.savefig("line3grid.png")
+plt.savefig("line4grid.png")
 plt.show()
