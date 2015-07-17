@@ -131,11 +131,12 @@ vz = B4LINE[:,3]
 fig = plt.gcf()
 plt.quiver(r,z,vr,vz, label="Input data")
 
-StartingZ=np.linspace(min(z)*0.99,max(z)*0.99, 30)#max(z)*0.99,100)
-StartingZ=np.vstack(((np.ones_like(StartingZ)*(max(r)-min(r))/10+min(r)).T, StartingZ.T)).T
-
+StartingZ=np.linspace(min(z)*0.99,max(z)*0.99, 20)#max(z)*0.99,100)
+StartingR=np.linspace(min(r),0.000895139,20)
+# StartingZ=np.vstack(((np.ones_like(StartingZ)*(max(r)-min(r))/10+min(r)).T, StartingZ.T)).T
+# StartingZ=np.vstack((StartingR.T, StartingZ.T)).T
 def fieldline(point):
-    plt.plot(point[0], point[1], "go")
+    plt.plot(point[0], point[1], "go", alpha=0.05)
     points=np.array([[point[0], point[1]]])
     print(points[-1])
     i=0
@@ -149,9 +150,14 @@ def fieldline(point):
 #plt.scatter(r,z,
 #    label="Input data in circle", alpha=0.5)
 # fieldline(np.array([0.000812395, 0.00130208]))
-for linenumber in range(len(StartingZ)):
-    point=np.array([StartingZ[linenumber,0], StartingZ[linenumber,1]])
-    fieldline(point)
+# for linenumber in range(len(StartingZ)):
+#     point=np.array([StartingZ[linenumber,0], StartingZ[linenumber,1]])
+#     fieldline(point)
+for i in StartingZ:
+    for j in StartingR:
+        point=np.array([j,i])
+        fieldline(point)
+
 
 # fieldline(np.array([0.00052395, 0.0000208]))
 # # fieldline(np.array([[0.005, -0.003]]))
@@ -173,5 +179,5 @@ plt.grid()
 plt.legend()
 plt.xlim(min(r),max(r))
 plt.ylim(min(z),max(z))
-plt.savefig("line3denser.png")
+plt.savefig("line3grid.png")
 plt.show()
