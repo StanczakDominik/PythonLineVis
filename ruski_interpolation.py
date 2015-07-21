@@ -9,33 +9,49 @@ VY = X
 fig=plt.figure(figsize=(11,7),dpi=200)
 plt.quiver(X[::20, ::20],Y[::20, ::20],VX[::20, ::20],VY[::20, ::20], alpha=1)
 
+def weight(x,y):
+    return 1/(x*x+y*y)
+
 def field(r, step_length):
-    return np.array([-r[1], r[0]])
+    radius=step_length
+    #TODO: time this part
+    x_distances=X-r[0]
+    y_distances=Y-r[1]
+    indices_in_radius = x_distances**2+y_distances**2<radius**2
+    number_points_inside_radius=np.count_nonzero(indices_in_radius)
+    if(number_points_inside_radius<10):
+        return field(r,step_length*2)
+    x_distances_inside=x_distances[indices_in_radius]
+    y_distances_inside=x_distances[indices_in_radius]
+    x_velocities_inside=VX[indices_in_radius]
+    y_velocities_inside=VY[indices_in_radius]
+    #TODO: use linear interpolation
+    weights=weight(x_distances_inside, y_distances_inside)
+    weight_sum=np.sum(weights)
+    vx_interpolated=np.sum(weights*x_velocities_inside)/weight_sum
+    vy_interpolated=np.sum(weights*y_velocities_inside)/weight_sum
+
+
+    return np.array([vx_interpolated, vy_interpolated])
 
 acceptable_error = 0.001 #relative to step length
 alpha_coefficient = 0.25 #
 
 def step(r,step_length):
-    #TODO: FIELD INTERPOLATION
     v = field(r, step_length)
 
     rk1 = r + v*step_length
-    #TODO: FIELD INTERPOLATION
     vk1 = field(rk1, step_length)
     rk = r+(v+vk1)/2 * step_length #the first approximation
 
     rk1half = r + v*step_length/2
-    #TODO: FIELD INTERPOLATION
     vk1half = field(rk1half, step_length)
     rkhalf = r+(v+vk1half)/2 * step_length/2
 
-    #TODO: FIELD INTERPOLATION
     vkhalf = field(rkhalf, step_length)
     rkstar1 = rkhalf + vkhalf * step_length/2
-    #TODO: FIELD INTERPOLATION
     vkstar1 = field(rkstar1, step_length)
     rkstar = rkhalf + (vkhalf+vkstar1)/2 * step_length/2 #the second approximation
-    #TODO: FIELD INTERPOLATION
     vkstar = field(rkstar, step_length)
 
     relative_difference=np.linalg.norm(rk-rkstar)/step_length
