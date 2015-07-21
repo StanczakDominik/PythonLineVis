@@ -12,7 +12,7 @@ def field(r):
     return np.array([-r[1], r[0]])
 
 step_length=0.1
-def step(r):
+def step(r,step_length):
     v = field(r)
 
     rk1 = r + v*step_length
@@ -39,30 +39,31 @@ def line(starting_r):
     v_array=field(starting_r)
     iterations=0
     while not closed:
-        iterations+=1
-    # for i in range(1000):
-        r,v=step(r)
-        r_array=np.vstack((r_array,r))
-        v_array=np.vstack((v_array,v))
 
         distance=np.linalg.norm(r-starting_r)
         if(not checking_if_closed and distance>step_length*3):
             checking_if_closed = True
-        if (checking_if_closed and distance<step_length):
+        if (checking_if_closed and distance<0.5*step_length):
             closed=True
+
+        iterations+=1
+        r,v=step(r, step_length)
+        r_array=np.vstack((r_array,r))
+        v_array=np.vstack((v_array,v))
 
         if(iterations>1000):
             print("Does not converge from r = " + str(starting_r))
             empty_result=np.zeros_like(starting_r)
             return empty_result, empty_result
+            
     return r_array, v_array
 
 rki = np.linspace(0.3,1,10)
 for r in rki:
     r = np.array([r,0])
     r_array, v_array = line(r)
-    plt.scatter(r_array[:,0], r_array[:,1], v_array[:,0], v_array[:,1], color="blue")
-    plt.quiver(r_array[:,0], r_array[:,1], v_array[:,0], v_array[:,1], alpha=0.5, color="blue")
+    plt.plot(r_array[:,0], r_array[:,1], "bo-")
+    #plt.quiver(r_array[:,0], r_array[:,1], v_array[:,0], v_array[:,1], alpha=0.5, color="blue")
 
 plt.xlim(-1,1)
 plt.ylim(-1,1)
