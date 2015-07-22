@@ -32,9 +32,12 @@ def field(r, step_length):
     if(number_points_inside_radius<15):
         return field(r,step_length*2)
     x_distances_inside=x_distances[indices_in_radius]
-    y_distances_inside=x_distances[indices_in_radius]
+    y_distances_inside=y_distances[indices_in_radius]
     x_velocities_inside=VX[indices_in_radius]
     y_velocities_inside=VY[indices_in_radius]
+    #TODO: sort by distances, average only the 10/20/40/any reasonable number of
+    #close points. If the distances are larger than some set value, break the
+    #while loop in def line.
     #TODO: use linear interpolation
     weights=weight(x_distances_inside, y_distances_inside)
     weight_sum=np.sum(weights)
@@ -85,7 +88,6 @@ def line(starting_r):
     step_length = 0.000001
 
     r_array=np.copy(starting_r)
-    #TODO: FIELD INTERPOLATION
     v_array,step_length=field(starting_r, step_length)
     iterations=0
     while not closed and not out_of_bounds:
@@ -116,24 +118,48 @@ rki = [np.array([-0.0049, 0.0002]),
         np.array([-0.0049, 0.0008]),
         np.array([-0.0049, 0.0005]),
         np.array([-0.0049, 0.0010]),
+        np.array([-0.0049, 0.0011]),
+        np.array([-0.0049, 0.0012]),
+        np.array([-0.0049, 0.0013]),
+        np.array([-0.0049, 0.0014]),
         np.array([-0.0049, 0.0015]),
+        np.array([-0.0049, 0.0015]),
+        np.array([-0.0049, 0.0016]),
+        np.array([-0.0049, 0.0017]),
+        np.array([-0.0049, 0.0018]),
+        np.array([-0.0049, 0.0019]),
         np.array([-0.0049, 0.0020]),
         np.array([-0.0049, 0.0021]),
         np.array([-0.0049, 0.0022]),
         np.array([-0.0049, 0.0023]),
         np.array([-0.0049, 0.0024]),
         np.array([-0.0049, 0.0025]),
+        np.array([-0.0049, 0.0026]),
+        np.array([-0.0049, 0.0027]),
+        np.array([-0.0049, 0.0028]),
+        np.array([-0.0049, 0.0029]),
         np.array([-0.0049, 0.0030]),
+        np.array([-0.0049, 0.0031]),
+        np.array([-0.0049, 0.0032]),
+        np.array([-0.0049, 0.0033]),
+        np.array([-0.0049, 0.0034]),
         np.array([-0.0049, 0.0035]),
-        np.array([-0.0049, 0.00367806])]
+        np.array([-0.0049, 0.00367806]),
+        np.array([-0.0027527, 0.00226012]),
+        np.array([-0.00250663, 0.00197791]),
+        np.array([-0.00152236, 0.00144696]), #bugs out
+        np.array([-0.00121477, 0.00118866]), #bugs out
+        np.array([-0.000661117, 0.000935142]), #bugs
+        np.array([1.55715e-5, 0.000916008]) #bugs out as well
+        ]
 for r in rki:
     r_array, v_array = line(r)
-    plt.plot(r_array[:,0], r_array[:,1], "o-")
+    plt.plot(r_array[:,0], r_array[:,1], "-")
     plt.quiver(r_array[:,0], r_array[:,1], v_array[:,0], v_array[:,1], alpha=0, color="blue",
      angles='xy', scale_units='xy')
 
 plt.xlim(xmin,xmax)
 plt.ylim(ymin,ymax)
-plt.title("i dont even")
+plt.grid()
 plt.savefig("output.png")
 plt.show()
