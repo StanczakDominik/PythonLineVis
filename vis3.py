@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-
+from scipy import interpolate
 #####brzeg
 B11LINE = np.loadtxt("B11LINE.dat")
 Xbrzeg = B11LINE[:,0]
@@ -20,11 +20,21 @@ VYbrzeg=VYbrzeg[indices]
 plt.grid()
 plt.xlabel("z")
 plt.ylabel("r")
-plt.plot(Xbrzeg, Ybrzeg, "go")
+plt.plot(Xbrzeg, Ybrzeg, "g-")
 plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg,
            alpha=1, angles='xy', scale_units='xy', color="green")
+tck=interpolate.splrep(Xbrzeg,Ybrzeg,s=0)
+xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),1000)
+spline=interpolate.splev(xspline,tck,der=0)
+plt.plot(xspline, spline, "b-", label="spline")
+
 plt.savefig("brzeg.png")
 plt.show()
+
+
+
+
+
 fig=plt.figure(figsize=(11,7),dpi=100)
 
 B4LINE = np.loadtxt("B4LINE.dat")
