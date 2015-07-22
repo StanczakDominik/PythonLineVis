@@ -1,6 +1,27 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+#####brzeg
+B11LINE = np.loadtxt("B11LINE.dat")
+Xbrzeg = B11LINE[:,0]
+Ybrzeg = B11LINE[:,1]
+VXbrzeg = B11LINE[:,2]
+VYbrzeg = -B11LINE[:,3]
+plt.grid()
+
+indices = np.argsort(Xbrzeg)
+Xbrzeg=Xbrzeg[indices]
+Ybrzeg=Ybrzeg[indices]
+VXbrzeg=VXbrzeg[indices]
+VYbrzeg=VYbrzeg[indices]
+
+plt.plot(Xbrzeg, Ybrzeg, "go")
+plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg,
+           alpha=1, angles='xy', scale_units='xy', color="green")
+
+plt.show()
+fig=plt.figure(figsize=(11,7),dpi=100)
+
 B4LINE = np.loadtxt("B4LINE.dat")
 X = B4LINE[:,0]
 Y = B4LINE[:,1]
@@ -10,11 +31,15 @@ ymin=min(Y)
 ymax=max(Y)
 VX = B4LINE[:,3]
 VY = B4LINE[:,2]
-fig=plt.figure(figsize=(11,7),dpi=100)
 plt.xlabel("z")
 plt.ylabel("r")
+
 plt.quiver(X[::1],Y[::1],VX[::1],VY[::1],
  alpha=1, angles='xy', scale_units='xy')
+
+
+
+
 #http://stackoverflow.com/questions/12079842/quiver-plot-arrow-aspect-ratio
 def weight(x,y):
     r=x*x+y*y
@@ -144,13 +169,13 @@ rki = [np.array([-0.0049, 0.0002]),
         np.array([-0.0049, 0.0033]),
         np.array([-0.0049, 0.0034]),
         np.array([-0.0049, 0.0035]),
-        np.array([-0.0049, 0.00367806]),
-        np.array([-0.0027527, 0.00226012]),
-        np.array([-0.00250663, 0.00197791]),
-        np.array([-0.00152236, 0.00144696]), #bugs out
-        np.array([-0.00121477, 0.00118866]), #bugs out
-        np.array([-0.000661117, 0.000935142]), #bugs
-        np.array([1.55715e-5, 0.000916008]) #bugs out as well
+##        np.array([-0.0049, 0.00367806]),
+##        np.array([-0.0027527, 0.00226012]),
+##        np.array([-0.00250663, 0.00197791]),
+##        np.array([-0.00152236, 0.00144696]), #bugs out
+##        np.array([-0.00121477, 0.00118866]), #bugs out
+##        np.array([-0.000661117, 0.000935142]), #bugs
+##        np.array([1.55715e-5, 0.000916008]) #bugs out as well
         ]
 for r in rki:
     r_array, v_array = line(r)
@@ -161,5 +186,5 @@ for r in rki:
 plt.xlim(xmin,xmax)
 plt.ylim(ymin,ymax)
 plt.grid()
-plt.savefig("output.png")
+plt.savefig("output_local.png")
 plt.show()
