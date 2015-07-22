@@ -7,7 +7,9 @@ Xbrzeg = B11LINE[:,0]
 Ybrzeg = B11LINE[:,1]
 VXbrzeg = B11LINE[:,2]
 VYbrzeg = -B11LINE[:,3]
-plt.grid()
+Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
+VXbrzeg/=Vbrzeg
+VYbrzeg/=Vbrzeg
 
 indices = np.argsort(Xbrzeg)
 Xbrzeg=Xbrzeg[indices]
@@ -15,10 +17,13 @@ Ybrzeg=Ybrzeg[indices]
 VXbrzeg=VXbrzeg[indices]
 VYbrzeg=VYbrzeg[indices]
 
+plt.grid()
+plt.xlabel("z")
+plt.ylabel("r")
 plt.plot(Xbrzeg, Ybrzeg, "go")
 plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg,
            alpha=1, angles='xy', scale_units='xy', color="green")
-
+plt.savefig("brzeg.png")
 plt.show()
 fig=plt.figure(figsize=(11,7),dpi=100)
 
