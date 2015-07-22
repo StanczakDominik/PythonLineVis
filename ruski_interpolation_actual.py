@@ -13,11 +13,12 @@ VY = B4LINE[:,2]
 fig=plt.figure(figsize=(11,7),dpi=100)
 plt.xlabel("z")
 plt.ylabel("r")
-plt.quiver(X[::5],Y[::5],VX[::5],VY[::5], alpha=1)
-
+plt.quiver(X[::1],Y[::1],VX[::1],VY[::1],
+ alpha=1, angles='xy', scale_units='xy')
+#http://stackoverflow.com/questions/12079842/quiver-plot-arrow-aspect-ratio
 def weight(x,y):
     r=x*x+y*y
-    r3=r*r*r*r*r
+    r3=r*r*r
     return 1/r3
 
 def field(r, step_length):
@@ -28,7 +29,7 @@ def field(r, step_length):
     indices_in_radius = x_distances**2+y_distances**2<radius**2
     number_points_inside_radius=np.count_nonzero(indices_in_radius)
     #print(r, number_points_inside_radius, radius)
-    if(number_points_inside_radius<5):
+    if(number_points_inside_radius<15):
         return field(r,step_length*2)
     x_distances_inside=x_distances[indices_in_radius]
     y_distances_inside=x_distances[indices_in_radius]
@@ -48,8 +49,8 @@ def field(r, step_length):
 
     return v_vector, step_length
 
-acceptable_error = 0.00001 #relative to step length
-alpha_coefficient = 0.25 #
+acceptable_error = 0.0000001 #relative to step length
+alpha_coefficient = 0.5 #
 
 def step(r,step_length):
     v, step_length = field(r, step_length)
@@ -81,7 +82,7 @@ def line(starting_r):
     closed = False
     out_of_bounds = False
     r=starting_r
-    step_length = 0.00001
+    step_length = 0.000001
 
     r_array=np.copy(starting_r)
     #TODO: FIELD INTERPOLATION
@@ -127,8 +128,9 @@ rki = [np.array([-0.0049, 0.0002]),
         np.array([-0.0049, 0.00367806])]
 for r in rki:
     r_array, v_array = line(r)
-    plt.plot(r_array[:,0], r_array[:,1], "-")
-    plt.quiver(r_array[:,0], r_array[:,1], v_array[:,0], v_array[:,1], alpha=1, color="blue")
+    plt.plot(r_array[:,0], r_array[:,1], "o-")
+    plt.quiver(r_array[:,0], r_array[:,1], v_array[:,0], v_array[:,1], alpha=0, color="blue",
+     angles='xy', scale_units='xy')
 
 plt.xlim(xmin,xmax)
 plt.ylim(ymin,ymax)
