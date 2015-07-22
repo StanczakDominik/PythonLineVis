@@ -1,35 +1,44 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
-#####brzeg
-B11LINE = np.loadtxt("B11LINE.dat")
-Xbrzeg = B11LINE[:,0]
-Ybrzeg = B11LINE[:,1]
-VXbrzeg = B11LINE[:,2]
-VYbrzeg = -B11LINE[:,3]
-Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
-VXbrzeg/=Vbrzeg
-VYbrzeg/=Vbrzeg
-
-indices = np.argsort(Xbrzeg)
-Xbrzeg=Xbrzeg[indices]
-Ybrzeg=Ybrzeg[indices]
-VXbrzeg=VXbrzeg[indices]
-VYbrzeg=VYbrzeg[indices]
-
-plt.grid()
-plt.xlabel("z")
-plt.ylabel("r")
-plt.plot(Xbrzeg, Ybrzeg, "g-")
-plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg,
-           alpha=1, angles='xy', scale_units='xy', color="green")
-tck=interpolate.splrep(Xbrzeg,Ybrzeg,s=0)
-xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),1000)
-spline=interpolate.splev(xspline,tck,der=0)
-plt.plot(xspline, spline, "b-", label="spline")
-
-plt.savefig("brzeg.png")
-plt.show()
+# #####brzeg
+# B11LINE = np.loadtxt("b11LINE_2.0.dat")
+# Xbrzeg = B11LINE[:,0]
+# Ybrzeg = B11LINE[:,1]
+# VXbrzeg = B11LINE[:,2]
+# VYbrzeg = B11LINE[:,3]
+# Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
+# VXbrzeg/=Vbrzeg
+# VYbrzeg/=Vbrzeg
+#
+# indices = np.argsort(Xbrzeg)
+# Xbrzeg=Xbrzeg[indices]
+# Ybrzeg=Ybrzeg[indices]
+# VXbrzeg=VXbrzeg[indices]
+# VYbrzeg=VYbrzeg[indices]
+#
+# plt.grid()
+# plt.xlabel("z")
+# plt.ylabel("r")
+# plt.plot(Xbrzeg, Ybrzeg, "g--")
+# plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg,
+#            alpha=1, angles='xy', scale_units='xy', color="green")
+# tck=interpolate.splrep(Xbrzeg,Ybrzeg,s=0)
+# xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),1000)
+# spline=interpolate.splev(xspline,tck,der=0)
+#
+# spline_gradient=interpolate.splev(Xbrzeg,tck,der=1)
+# spline_normal_delta_x=1/np.sqrt(1+spline_gradient**2)
+# spline_normal_delta_y=spline_normal_delta_x*spline_gradient
+# #plt.plot(xspline, spline, "b-", label="spline")
+# plt.quiver(Xbrzeg,Ybrzeg, -spline_normal_delta_y, spline_normal_delta_x,
+#            alpha=1, angles='xy', scale_units='xy', color="blue")
+#
+# #TODO: take Xbrzeg, Ybrzeg points. Use spline interpolation to calculate
+# # derivative at these points,
+#
+# plt.savefig("brzeg.png")
+# plt.show()
 
 
 
@@ -62,11 +71,17 @@ def weight(x,y):
     return 1/r3
 
 def field(r, step_length):
+    cutoff=False
     radius=3*step_length
     #TODO: time this part
     x_distances=X-r[0]
     y_distances=Y-r[1]
-    indices_in_radius = x_distances**2+y_distances**2<radius**2
+    distances_squared = x_distances**2+y_distances**2
+
+    if np.min(distances_squared)>0.00005**2:
+        cutoff=True
+
+    indices_in_radius = distances_squared<radius**2
     number_points_inside_radius=np.count_nonzero(indices_in_radius)
     #print(r, number_points_inside_radius, radius)
     if(number_points_inside_radius<15):
@@ -90,27 +105,27 @@ def field(r, step_length):
     #print(r, number_points_inside_radius, radius)
 
 
-    return v_vector, step_length
+    return v_vector, step_length, cutoff
 
 acceptable_error = 0.0000001 #relative to step length
 alpha_coefficient = 0.5 #
 
 def step(r,step_length):
-    v, step_length = field(r, step_length)
+    v, step_length, cutoff = field(r, step_length)
 
     rk1 = r + v*step_length
-    vk1,dummy = field(rk1, step_length)
+    vk1,dummy, dummy2 = field(rk1, step_length)
     rk = r+(v+vk1)/2 * step_length #the first approximation
 
     rk1half = r + v*step_length/2
-    vk1half,dummy = field(rk1half, step_length)
+    vk1half,dummy, dummy2 = field(rk1half, step_length)
     rkhalf = r+(v+vk1half)/2 * step_length/2
 
-    vkhalf,dummy = field(rkhalf, step_length)
+    vkhalf,dummy, dummy2 = field(rkhalf, step_length)
     rkstar1 = rkhalf + vkhalf * step_length/2
-    vkstar1,dummy = field(rkstar1, step_length)
+    vkstar1,dummy, dummy2 = field(rkstar1, step_length)
     rkstar = rkhalf + (vkhalf+vkstar1)/2 * step_length/2 #the second approximation
-    vkstar,dummy = field(rkstar, step_length)
+    vkstar,dummy, dummy2 = field(rkstar, step_length)
 
     relative_difference=np.linalg.norm(rk-rkstar)/step_length
     if(relative_difference>acceptable_error):
@@ -118,7 +133,7 @@ def step(r,step_length):
     elif(relative_difference<alpha_coefficient*acceptable_error):
         step_length*=2
 
-    return rkstar, vkstar, step_length
+    return rkstar, vkstar, step_length, cutoff
 
 def line(starting_r):
     checking_if_closed = False
@@ -126,9 +141,9 @@ def line(starting_r):
     out_of_bounds = False
     r=starting_r
     step_length = 0.000001
-
+    cutoff=False
     r_array=np.copy(starting_r)
-    v_array,step_length=field(starting_r, step_length)
+    v_array,step_length, cutoff=field(starting_r, step_length)
     iterations=0
     while not closed and not out_of_bounds:
 
@@ -140,9 +155,13 @@ def line(starting_r):
         if (r[0]>xmax or r[0] < xmin or r[1]>ymax or r[1]<ymin):
             out_of_bounds = True
         iterations+=1
-        r,v, step_length=step(r, step_length)
+        r,v, step_length, cutoff=step(r, step_length)
         r_array=np.vstack((r_array,r))
         v_array=np.vstack((v_array,v))
+
+        if cutoff:
+            print("CRITICAL FAILURE - cutoff")
+            break
 
         if(iterations>10000):
             print("Does not converge from r = " + str(starting_r))
@@ -201,5 +220,5 @@ for r in rki:
 plt.xlim(xmin,xmax)
 plt.ylim(ymin,ymax)
 plt.grid()
-plt.savefig("output_local.png")
+plt.savefig("output.png")
 plt.show()
