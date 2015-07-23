@@ -58,7 +58,7 @@ plt.savefig("brzeg_sasiedzi.png")
 plt.show()
 
 
-fig=plt.figure(figsize=(11,7),dpi=100)
+##fig=plt.figure(figsize=(11,7),dpi=100)
 
 
 
