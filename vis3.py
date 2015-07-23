@@ -1,50 +1,65 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
-# #####brzeg
-# B11LINE = np.loadtxt("b11LINE_2.0.dat")
-# Xbrzeg = B11LINE[:,0]
-# Ybrzeg = B11LINE[:,1]
-# VXbrzeg = B11LINE[:,2]
-# VYbrzeg = B11LINE[:,3]
-# Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
-# VXbrzeg/=Vbrzeg
-# VYbrzeg/=Vbrzeg
-#
-# indices = np.argsort(Xbrzeg)
-# Xbrzeg=Xbrzeg[indices]
-# Ybrzeg=Ybrzeg[indices]
-# VXbrzeg=VXbrzeg[indices]
-# VYbrzeg=VYbrzeg[indices]
-#
-# plt.grid()
-# plt.xlabel("z")
-# plt.ylabel("r")
-# plt.plot(Xbrzeg, Ybrzeg, "g--")
-# plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg,
-#            alpha=1, angles='xy', scale_units='xy', color="green")
-# tck=interpolate.splrep(Xbrzeg,Ybrzeg,s=0)
-# xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),1000)
-# spline=interpolate.splev(xspline,tck,der=0)
-#
-# spline_gradient=interpolate.splev(Xbrzeg,tck,der=1)
-# spline_normal_delta_x=1/np.sqrt(1+spline_gradient**2)
-# spline_normal_delta_y=spline_normal_delta_x*spline_gradient
-# #plt.plot(xspline, spline, "b-", label="spline")
-# plt.quiver(Xbrzeg,Ybrzeg, -spline_normal_delta_y, spline_normal_delta_x,
-#            alpha=1, angles='xy', scale_units='xy', color="blue")
-#
-# #TODO: take Xbrzeg, Ybrzeg points. Use spline interpolation to calculate
-# # derivative at these points,
-#
-# plt.savefig("brzeg.png")
-# plt.show()
-
-
-
-
 
 fig=plt.figure(figsize=(11,7),dpi=100)
+
+ #####brzeg
+B11LINE = np.loadtxt("A11LINE.dat")
+Xbrzeg = B11LINE[:,0]
+Ybrzeg = B11LINE[:,1]
+VXbrzeg = B11LINE[:,2]
+VYbrzeg = B11LINE[:,3]
+Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
+VXbrzeg/=Vbrzeg
+VYbrzeg/=Vbrzeg
+indices = np.argsort(Xbrzeg)
+Xbrzeg=Xbrzeg[indices]
+Ybrzeg=Ybrzeg[indices]
+VXbrzeg=VXbrzeg[indices]
+VYbrzeg=VYbrzeg[indices]
+plt.grid()
+plt.xlabel("z")
+plt.ylabel("r")
+plt.plot(Xbrzeg, Ybrzeg, "g--")
+#plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg,
+#           alpha=1, angles='xy', scale_units='xy', color="green")
+tck=interpolate.splrep(Xbrzeg,Ybrzeg,s=0)
+xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),1000)
+spline=interpolate.splev(xspline,tck,der=0)
+spline_gradient=interpolate.splev(Xbrzeg,tck,der=1)
+spline_normal_delta_x=1/np.sqrt(1+spline_gradient**2)
+spline_normal_delta_y=spline_normal_delta_x*spline_gradient
+#plt.plot(xspline, spline, "b--", label="spline")
+#plt.quiver(Xbrzeg,Ybrzeg, -spline_normal_delta_y, spline_normal_delta_x,
+#           alpha=1, angles='xy', scale_units='xy', color="blue")
+
+
+#
+data = np.loadtxt("a")
+number_of_batches=int(len(data)/9)
+for i in range(number_of_batches):
+    batch=data[i*9:9*(i+1),2:4]
+
+    #NEIGHBORS
+    RA = batch[:,0]    #R position of particles 
+    ZA = batch[:,1]    #Z position of particles
+    center_z = ZA[4]
+    center_r = RA[4]
+    center_r_array=np.ones(9)*center_r
+    center_z_array=np.ones(9)*center_z
+
+    r_array=np.vstack((center_r_array,RA))
+    z_array=np.vstack((center_z_array,ZA))
+    plt.plot(z_array,r_array, "k-")
+    plt.plot(center_z, center_r, "o")
+plt.legend()
+plt.savefig("brzeg_sasiedzi.png")
+
+
+
+
+
 
 B4LINE = np.loadtxt("B4LINE.dat")
 X = B4LINE[:,0]
