@@ -55,9 +55,10 @@ for i in range(number_of_batches):
     plt.plot(center_z, center_r, "o")
 plt.legend()
 plt.savefig("brzeg_sasiedzi.png")
+plt.show()
 
 
-
+fig=plt.figure(figsize=(11,7),dpi=100)
 
 
 
