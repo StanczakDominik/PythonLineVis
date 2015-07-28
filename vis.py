@@ -11,6 +11,8 @@
 #W razie problemów proszę o wysłanie pliku debug.log i ewentualnie
 # plików z danymi na mojego maila.
 
+CZY_ZAPISYWAC_OBRAZKI=0
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
@@ -34,15 +36,18 @@ data_file_name = input()            #czyta nazwę pliku jako string
 if data_file_name:
     print(" Wizualizuję brzeg.")
     data_file = np.loadtxt(data_file_name)  #czyta dane liczbowe
+    print("Długość pliku:" + str(len(data_file)))
+    #print(" koniec pliku")
+
     Xbrzeg = data_file[:,0]             #tworzy jednowymiarowe tablice...
     Ybrzeg = data_file[:,1]             #danych zczytanych z pliku
     VXbrzeg = data_file[:,2]
     VYbrzeg = data_file[:,3]
-
+    #print(Xbrzeg.shape)
     #normalizacja prędkości na brzegu do 1
-    Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
-    VXbrzeg/=Vbrzeg
-    VYbrzeg/=Vbrzeg
+##    Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
+##    VXbrzeg/=Vbrzeg
+##    VYbrzeg/=Vbrzeg
 
     #sortowanie punktów brzegowych według położeń na osi x (z)
     indices = np.argsort(Xbrzeg)   #zwraca indeksy - kolejność posortowanych danych)
@@ -51,55 +56,171 @@ if data_file_name:
     VXbrzeg=VXbrzeg[indices]
     VYbrzeg=VYbrzeg[indices]
 
-    #interpolacja spline'm oraz obliczanie wektorów normalnych
-    tck=interpolate.splrep(Xbrzeg,Ybrzeg,s=0)
-    xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),1000)
-    spline=interpolate.splev(xspline,tck,der=0)
-    spline_gradient=interpolate.splev(Xbrzeg,tck,der=1)
-    spline_normal_delta_x=1/np.sqrt(1+spline_gradient**2)
-    spline_normal_delta_y=spline_normal_delta_x*spline_gradient
-    print(" Zaznaczam geometryczne (z dopasowania spline'a) wektory normalne na niebiesko, zaś z danych - na zielono.")
-    plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg, alpha=1, angles='xy', scale_units='xy', color="green") #brzeg jako strzałki
-    plt.quiver(Xbrzeg,Ybrzeg, -spline_normal_delta_y, spline_normal_delta_x, alpha=1, angles='xy', scale_units='xy', color="blue")
+    print("Czy rysować normalne ze spline'a? Pozostaw puste, jeśli nie.")
+    draw_spline=input()
+    if(draw_spline):
+        #interpolacja spline'm oraz obliczanie wektorów normalnych
+        #print(Xbrzeg.shape)
+        #print(Ybrzeg.shape)
+        smoothing=0.000000001
+        spline_solved=False
+        #TO JEST ZROBIONE TAK ŻEBY BYŁO DOBRZE
+        while not spline_solved:
+            #print(smoothing)
+            try:
+                tck=interpolate.splrep(Xbrzeg,Ybrzeg,k=5, s=smoothing)
+                #print(tck[1])
+                some_element_not_a_number=np.isnan(np.sum(tck[1]))
+                if not some_element_not_a_number:
+                    spline_solved=True
+                else:
+                    print("Próbuję dopasować spline'a. To może chwilę potrwać...")
+                    smoothing*=10
+            except:
+                #e=sys.exc_info()[0]
+                #print(e)
+                smoothing=smoothing*10
+                #print(smoothing)
+        #print("tck1",tck[1])
+        #print(np.isnan(tck[1]))
+        xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),5000)
+        
+        spline=interpolate.splev(xspline,tck,der=0)
+        spline_gradient=interpolate.splev(Xbrzeg,tck,der=1)
+        spline_normal_delta_x=1/np.sqrt(1+spline_gradient**2)
+        spline_normal_delta_y=spline_normal_delta_x*spline_gradient
+        print(" Zaznaczam geometryczne (z dopasowania spline'a) wektory normalne na niebiesko")
+        plt.plot(xspline, spline, "b-")
+        #plt.quiver(Xbrzeg,Ybrzeg, -spline_normal_delta_y, spline_normal_delta_x, alpha=1, angles='xy', scale_units='xy', color="blue")
 
-print("""Czy wyświetlać sąsiadów? Jeśli nie, pozostaw puste. Jeśli tak,
-    podaj nazwę pliku z ich danymi. Przykład: sasiad.dat. Format taki, jaki generuje załączony program fortranowy sasiad.for""")
-neighbor_file_name=input()
-if neighbor_file_name:
-    data = np.loadtxt(neighbor_file_name)
-    number_of_batches=int(len(data)/9)
-    for i in range(number_of_batches):
-        batch=data[i*9:9*(i+1),2:4]
+      
+        
+    plt.plot(Xbrzeg, Ybrzeg, "g-")
+    #plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg, alpha=1, angles='xy', scale_units='xy', color="green") #brzeg jako strzałki
+##    x_coordinates = VXbrzeg
+##    y_coordinates = VYbrzeg
+##        a_coefficients=-x_coordinates/y_coordinates
+##      x_coordinates=Xbrzeg[indices]
+##    y_coordinates=Ybrzeg[indices]
+    indices=np.argsort(Xbrzeg)
+    x_coordinates = -spline_normal_delta_y
+    y_coordinates = spline_normal_delta_x
+    a_coefficients=-x_coordinates/y_coordinates
+    x_coordinates=Xbrzeg[indices]
+    y_coordinates=Ybrzeg[indices]
+    a_coeffiecients=a_coefficients[indices]
 
-        #NEIGHBORS
-        RA = batch[:,0]    #R position of particles
-        ZA = batch[:,1]    #Z position of particles
-        center_z = ZA[4]
-        center_r = RA[4]
-        center_r_array=np.ones(9)*center_r
-        center_z_array=np.ones(9)*center_z
+    a1=a_coefficients[:-1]
+    a2=a_coefficients[1:]
+    x1=x_coordinates[:-1]
+    x2=x_coordinates[1:]
+    y1=y_coordinates[:-1]
+    y2=y_coordinates[1:]
 
-        r_array=np.vstack((center_r_array,RA))
-        z_array=np.vstack((center_z_array,ZA))
-        plt.plot(z_array,r_array, "k-")
-        plt.plot(center_z, center_r, "o")
+    
+    solved_x=(a1*x1-a2*x2+y2-y1)/(a1-a2)
+    solved_y=a1*(solved_x-x1)+y1
+##    plt.plot(solved_x,solved_y, "r-", label="bez sortowania")
 
-if neighbor_file_name or data_file_name:
-    brzeg_file_name="brzeg_sasiedzi"+timestr+".png"
-    plt.savefig(brzeg_file_name)
-    print(" Brzeg zapisany do pliku " + brzeg_file_name)
+    indices = np.argsort(solved_x)   #zwraca indeksy - kolejność posortowanych danych)
+    solved_x=solved_x[indices]
+    solved_y=solved_y[indices]
+    plt.plot(solved_x,solved_y, "c-", label="sortowanie")
+    plt.legend()
 
-
-
-
-print("Czy wyświetlić w tej chwili dane brzegu? Pozostaw puste, jeśli nie.")
-show_brzeg_data=input()
-if show_brzeg_data:
     plt.show()
     fig=plt.figure(figsize=(11,7),dpi=100)
     plt.grid()
     plt.xlabel("z")
     plt.ylabel("r")
+    
+##print("""Czy wyświetlać sąsiadów? Jeśli nie, pozostaw puste. Jeśli tak,
+##    podaj nazwę pliku z ich danymi. Przykład: sasiad.dat. Format taki, jaki generuje załączony program fortranowy sasiad.for""")
+##neighbor_file_name=input()
+##if neighbor_file_name:
+##    data = np.loadtxt(neighbor_file_name)
+##    number_of_batches=int(len(data)/9)
+##    for i in range(number_of_batches):
+##        batch=data[i*9:9*(i+1),2:4]
+##
+##        #NEIGHBORS
+##        RA = batch[:,0]    #R position of particles
+##        ZA = batch[:,1]    #Z position of particles
+##        center_z = ZA[4]
+##        center_r = RA[4]
+##        center_r_array=np.ones(9)*center_r
+##        center_z_array=np.ones(9)*center_z
+##
+##        r_array=np.vstack((center_r_array,RA))
+##        z_array=np.vstack((center_z_array,ZA))
+##        plt.plot(z_array,r_array, "k-")
+##        plt.plot(center_z, center_r, "o")
+
+print("""Czy wyświetlać sąsiadów? Jeśli nie, pozostaw puste. Jeśli tak,
+upewnij się że w folderze są pliki fort.15 z indeksami i fort.16 z położeniami
+punktów. Pliki generuje mox82sasiad.for""")
+neighbor_file_name=input()
+if neighbor_file_name:
+    print("Czytam dane z plików...")
+    fort15 = np.loadtxt("fort.15", dtype=int)
+    fort16 = np.loadtxt("fort.16")
+
+    print("L=", end='')
+    L=int(input())
+    print("K=", end='')
+    K=int(input())
+
+    while(L or K):
+        plt.grid()
+        plt.xlabel("z")
+        plt.ylabel("r")
+        plt.plot(Xbrzeg, Ybrzeg, "g-")
+        plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg, alpha=1, angles='xy', scale_units='xy', color="green") #brzeg jako strzałki
+        
+        number_of_batches=int(len(fort15)/9)
+        
+        first_index_correct=fort15[:,0]==L
+        second_index_correct=fort15[:,1]==K
+        resulting_array=first_index_correct*second_index_correct
+        resulting_indices=np.nonzero(resulting_array)
+
+        found_values=fort16[resulting_indices]
+        Z = found_values[:,1]
+        R = found_values[:,0]
+
+        center_z = Z[4]
+        center_r = R[4]
+        center_r_array=np.ones(9)*center_r
+        center_z_array=np.ones(9)*center_z
+
+        r_array=np.vstack((center_r_array,R))
+        z_array=np.vstack((center_z_array,Z))
+        plt.plot(fort16[:,1], fort16[:,0], "k,")
+        plt.plot(z_array,r_array, "r-")
+        plt.plot(center_z, center_r, "ro")
+
+        #plt.plot(Z,R, 'bo')
+        #plt.plot(Z[4], R[4], 'ro')
+        plt.show()
+
+        print("L=", end='')
+        L=int(input())
+        print("K=", end='')
+        K=int(input())
+        fig=plt.figure(figsize=(11,7),dpi=100)
+
+##if CZY_ZAPISYWAC_OBRAZKI and (neighbor_file_name or data_file_name):
+##    brzeg_file_name="brzeg_sasiedzi"+timestr+".png"
+##    plt.savefig(brzeg_file_name)
+##    print(" Brzeg zapisany do pliku " + brzeg_file_name)
+
+
+
+
+##print("Czy wyświetlić w tej chwili dane brzegu? Pozostaw puste, jeśli nie.")
+##show_brzeg_data=input()
+##if show_brzeg_data:
+
 
 
 
@@ -236,11 +357,11 @@ if simulation_data_file_name:
         return r_array, v_array
 
     print("""Podaj nazwę pliku z danymi punktów początkowych linii.
-    Domyślnie punkty_poczatkowe.dat (aby tego nie zmieniać, pozostaw puste)
+    Domyślnie vis_punkty_poczatkowe.dat (aby tego nie zmieniać, pozostaw puste)
     Dane z których program zaczyna interpolację powinny być sformatowane w ten sposób: z, r""")
     starting_point_file_name=input()
     if not starting_point_file_name:
-        starting_point_file_name = "punkty_poczatkowe.dat"
+        starting_point_file_name = "vis_punkty_poczatkowe.dat"
 
     print("Zaczynam interpolację.")
     rki = np.loadtxt(starting_point_file_name)
@@ -292,10 +413,10 @@ if simulation_data_file_name:
     plt.xlim(xmin,xmax)
     plt.ylim(ymin,ymax)
     plt.grid()
-
-    visualization_file_name=simulation_data_file_name[:-4] + "wizualizacja"+timestr+".png"
-    plt.savefig(visualization_file_name)
-    print("Wizualizacja wyników zapisana do pliku " + visualization_file_name)
+    if CZY_ZAPISYWAC_OBRAZKI:
+        visualization_file_name=simulation_data_file_name[:-4] + "wizualizacja"+timestr+".png"
+        plt.savefig(visualization_file_name)
+        print("Wizualizacja wyników zapisana do pliku " + visualization_file_name)
 
     plt.show()
 print("Koniec działania programu.")
