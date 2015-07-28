@@ -114,11 +114,10 @@ c      Common/dif41/am5,bm5,cm5,dt
  
        write(*,*) 'PODAJ ZBIOR WEJSCOWY   '
        read(*,*) dane1  
-		dane1='a11'
-       WRITE(*,*) 'PODAJ ZBIOR WYJSCIOWY DANE(XXX+1)  ' 
-       READ(*,*) DANE2
-	   OPEN(UNIT=7,FILE=DANE2,ACCESS='SEQUENTIAL',FORM=
-     *'FORMATTED')
+c       WRITE(*,*) 'PODAJ ZBIOR WYJSCIOWY DANE(XXX+1)  ' 
+c       READ(*,*) DANE2
+c	   OPEN(UNIT=7,FILE=DANE2,ACCESS='SEQUENTIAL',FORM=
+c    *'FORMATTED')
 	   
  673  continue
 
@@ -409,6 +408,8 @@ c      DO 7 N=1,2
 
   67   continue
        ipor=0
+      OPEN(36,FILE="dane2sasiedzi",ACCESS='SEQUENTIAL',FORM='FORMATTED')
+ 121  FORMAT(2I4,2PE13.4,2PE13.4)   
       DO 601 L=1,LL
       DO 601 K=KPC(L),KKC(L)
       if(pt(l,k,1).gt.100.) go to 601 
@@ -424,6 +425,7 @@ c      PT(L,K,33)=1./3.
 c      apt(l,k,15)=0.
       apt(l,k,9)=0.
 C       ENDIF
+      
       IF(PT(L,K,1).LT.100.) NPART=NPART+1
       pt(l,k,24)=0.
       pt(l,k,25)=0.
@@ -458,19 +460,14 @@ C      apt(l,k,13)=0
       IF(PT(L,K,1).GT.100.) GO TO 602
       DIS(L,K,KM)=DSQRT((RA-PT(L,K,1))**2+(ZA-PT(L,K,2))**2)
 c      write(*,*) l,k,'km=',km
-      if(apt(l,k,2).gt.5.) then
 c      if(l.eq.1.and.k.eq.1) then
-	  if(ZA.lt.-4e-3.and.KM.eq.5) then
-	      write(*,*) LI,KI, RA, ZA
-         pause
-	  endif
-	  
+	write(36,121) L,K, RA, ZA
 c       write(*,*) 'km=',KM,'LI=',li,'KI=',ki
 c      write(*,*) 'dra=',(ra-pt(l,k,1))/srz1c,'dza=',(za-pt(l,k,2))/srz1c
 c      write(*,*) dis(l,k,km)/srz1c
 c       write(*,*) pt(li,ki,13)**0.25/1.16d4
 c       WRITE(*,*) PT(LI,KI,3)
-      endif
+c      endif
     
   602  CONTINUE
   601 continue

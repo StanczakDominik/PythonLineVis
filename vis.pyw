@@ -22,7 +22,7 @@ def plot_format():
 class MyDialog:
     def __init__(self, parent):
         top = self.top = Tkinter.Toplevel(parent)
-        Tkinter.Label(top, text="Indeksy L oraz K").pack()
+        Tkinter.Label(top, text="Indeksy L oraz K\nPrzed wpisaniem zamknij wykres!").pack()
         self.L = Tkinter.Entry(top)
         self.L.pack(padx=5)
 
@@ -35,10 +35,11 @@ class MyDialog:
         quitbutton.pack()
 
     def ok(self):
-        global L, K
+        global L, K, WhileRunning
         L=int(self.L.get())
         K=int(self.K.get())
         print ("value is", L, K)
+        WhileRunning=True
         self.top.destroy()
     def quitc(self):
         global WhileRunning
@@ -72,7 +73,7 @@ class window(Tkinter.Tk):
         self.SasiedziInside = Tkinter.Button(self,text=u"Pokaż sąsiadów wewnątrz", command = self.OnSasiedziInsideClick)
         self.SasiedziInside.grid(column=0,row=2,sticky='NSEW')
 
-        self.SasiedziInsideLabel = Tkinter.Label(self, text=u"Dane w pliku z indeksami L,K,KM oraz drugim z pozycjami RA, ZA")
+        self.SasiedziInsideLabel = Tkinter.Label(self, text=u"Dane z pliku preparowanego przez sasiad.exe")
         self.SasiedziInsideLabel.grid(column=1,row=2,sticky='NSEW')
 
         #Interpolacja linii
@@ -138,12 +139,17 @@ class window(Tkinter.Tk):
             plt.show()
     def OnSasiedziInsideClick(self):
         global WhileRunning
-        indices_file_name=askopenfilename(title=u"Plik z indeksami")
-        positions_file_name=askopenfilename(title=u"Plik z pozycjami")
+        #indices_file_name=askopenfilename(title=u"Plik z indeksami")
+        file_name = askopenfilename(title=u"Plik z danymi")
+        #positions_file_name=askopenfilename(title=u"Plik z pozycjami")
         print("Czytam dane z plików...")
-        fort15 = np.loadtxt(indices_file_name, dtype=int)
-        fort16 = np.loadtxt(positions_file_name)
+        plik = np.loadtxt(file_name)
+        fort15 =plik[:,:2].astype(int)
+        fort16=plik[:,2:]
+##        fort15 = np.loadtxt(indices_file_name, dtype=int)
+##        fort16 = np.loadtxt(positions_file_name)
         WhileRunning=True
+        print("hm")
         d = MyDialog(self)
         self.wait_window(d.top)
 
@@ -159,7 +165,6 @@ class window(Tkinter.Tk):
                 print(resulting_indices)
 
                 found_values=fort16[resulting_indices]
-                print("znalezione", found_values)
                 Z = found_values[:,1]
                 R = found_values[:,0]
 
@@ -176,8 +181,10 @@ class window(Tkinter.Tk):
                 plot_format()
                 #plt.plot(Z,R, 'bo')
                 #plt.plot(Z[4], R[4], 'ro')
+                print("wtf")
                 if(self.SeparatePlots):
-                    plt.show()
+                    plt.show(block=False)
+                print("boo")
             except IndexError:
                 tkinter.messagebox.showwarning("Nietrafiony indeks", "Nie ma takiego indeksu. Spróbuj z innym.")
             d = MyDialog(self)
