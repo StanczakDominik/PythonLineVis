@@ -1,6 +1,6 @@
-2015-07-24 10:31:32,505 /usr/local/lib/python3.4/dist-packages/matplotlib/backends/backend_gtk3.py:215: Warning: Source ID 7 was not found when attempting to remove it
-  GLib.source_remove(self._idle_event_id)
+2015-07-24 12:48:15,484 D:\Stanczak\PythonLineVis\vis.py:44: RuntimeWarning: invalid value encountered in true_divide
+  VXbrzeg/=Vbrzeg
 
-2015-07-24 10:31:45,448 /usr/local/lib/python3.4/dist-packages/matplotlib/backends/backend_gtk3.py:215: Warning: Source ID 31 was not found when attempting to remove it
-  GLib.source_remove(self._idle_event_id)
+2015-07-24 12:48:15,484 D:\Stanczak\PythonLineVis\vis.py:45: RuntimeWarning: invalid value encountered in true_divide
+  VYbrzeg/=Vbrzeg
 

@@ -11,6 +11,8 @@
 #W razie problemów proszę o wysłanie pliku debug.log i ewentualnie
 # plików z danymi na mojego maila.
 
+CZY_ZAPISYWAC_OBRAZKI=0
+
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
@@ -34,15 +36,18 @@ data_file_name = input()            #czyta nazwę pliku jako string
 if data_file_name:
     print(" Wizualizuję brzeg.")
     data_file = np.loadtxt(data_file_name)  #czyta dane liczbowe
+    print(data_file)
+    print(" koniec pliku")
+
     Xbrzeg = data_file[:,0]             #tworzy jednowymiarowe tablice...
     Ybrzeg = data_file[:,1]             #danych zczytanych z pliku
     VXbrzeg = data_file[:,2]
     VYbrzeg = data_file[:,3]
-
+    print(Xbrzeg.shape)
     #normalizacja prędkości na brzegu do 1
-    Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
-    VXbrzeg/=Vbrzeg
-    VYbrzeg/=Vbrzeg
+##    Vbrzeg=np.sqrt(VXbrzeg**2+VYbrzeg**2)
+##    VXbrzeg/=Vbrzeg
+##    VYbrzeg/=Vbrzeg
 
     #sortowanie punktów brzegowych według położeń na osi x (z)
     indices = np.argsort(Xbrzeg)   #zwraca indeksy - kolejność posortowanych danych)
@@ -52,13 +57,19 @@ if data_file_name:
     VYbrzeg=VYbrzeg[indices]
 
     #interpolacja spline'm oraz obliczanie wektorów normalnych
-    tck=interpolate.splrep(Xbrzeg,Ybrzeg,s=0)
-    xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),1000)
+    print(Xbrzeg.shape)
+    print(Ybrzeg.shape)
+    tck=interpolate.splrep(Xbrzeg,Ybrzeg,k=5,s=0.0000001)
+    print(tck)
+    xspline=np.linspace(min(Xbrzeg),max(Xbrzeg),5000)
+    
     spline=interpolate.splev(xspline,tck,der=0)
     spline_gradient=interpolate.splev(Xbrzeg,tck,der=1)
     spline_normal_delta_x=1/np.sqrt(1+spline_gradient**2)
     spline_normal_delta_y=spline_normal_delta_x*spline_gradient
     print(" Zaznaczam geometryczne (z dopasowania spline'a) wektory normalne na niebiesko, zaś z danych - na zielono.")
+    plt.plot(Xbrzeg, Ybrzeg, "g-")
+    plt.plot(xspline, spline, "b-")
     plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg, alpha=1, angles='xy', scale_units='xy', color="green") #brzeg jako strzałki
     plt.quiver(Xbrzeg,Ybrzeg, -spline_normal_delta_y, spline_normal_delta_x, alpha=1, angles='xy', scale_units='xy', color="blue")
 
@@ -84,7 +95,7 @@ if neighbor_file_name:
         plt.plot(z_array,r_array, "k-")
         plt.plot(center_z, center_r, "o")
 
-if neighbor_file_name or data_file_name:
+if CZY_ZAPISYWAC_OBRAZKI and (neighbor_file_name or data_file_name):
     brzeg_file_name="brzeg_sasiedzi"+timestr+".png"
     plt.savefig(brzeg_file_name)
     print(" Brzeg zapisany do pliku " + brzeg_file_name)
@@ -236,11 +247,11 @@ if simulation_data_file_name:
         return r_array, v_array
 
     print("""Podaj nazwę pliku z danymi punktów początkowych linii.
-    Domyślnie punkty_poczatkowe.dat (aby tego nie zmieniać, pozostaw puste)
+    Domyślnie vis_punkty_poczatkowe.dat (aby tego nie zmieniać, pozostaw puste)
     Dane z których program zaczyna interpolację powinny być sformatowane w ten sposób: z, r""")
     starting_point_file_name=input()
     if not starting_point_file_name:
-        starting_point_file_name = "punkty_poczatkowe.dat"
+        starting_point_file_name = "vis_punkty_poczatkowe.dat"
 
     print("Zaczynam interpolację.")
     rki = np.loadtxt(starting_point_file_name)
@@ -292,10 +303,10 @@ if simulation_data_file_name:
     plt.xlim(xmin,xmax)
     plt.ylim(ymin,ymax)
     plt.grid()
-
-    visualization_file_name=simulation_data_file_name[:-4] + "wizualizacja"+timestr+".png"
-    plt.savefig(visualization_file_name)
-    print("Wizualizacja wyników zapisana do pliku " + visualization_file_name)
+    if CZY_ZAPISYWAC_OBRAZKI:
+        visualization_file_name=simulation_data_file_name[:-4] + "wizualizacja"+timestr+".png"
+        plt.savefig(visualization_file_name)
+        print("Wizualizacja wyników zapisana do pliku " + visualization_file_name)
 
     plt.show()
 print("Koniec działania programu.")
