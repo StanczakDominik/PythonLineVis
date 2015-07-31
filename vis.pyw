@@ -8,6 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import interpolate
 import logging
+import subprocess
 logging.basicConfig(filename='debug.log',filemode='w',level=logging.DEBUG, format='%(asctime)s %(message)s')
 logging.captureWarnings(True)
 
@@ -136,12 +137,12 @@ class window(Tkinter.Tk):
             plt.plot(center_z, center_r, "o")
         plot_format()
         if(self.SeparatePlots):
+            plt.axes().set_aspect('equal', 'datalim')
             plt.show()
     def OnSasiedziInsideClick(self):
         global WhileRunning
-        #indices_file_name=askopenfilename(title=u"Plik z indeksami")
-        file_name = askopenfilename(title=u"Plik z danymi")
-        #positions_file_name=askopenfilename(title=u"Plik z pozycjami")
+        subprocess.call("sasiad.exe")
+        file_name = "dane2sasiedzi"
         print("Czytam dane z plików...")
         plik = np.loadtxt(file_name)
         fort15 =plik[:,:2].astype(int)
@@ -183,6 +184,7 @@ class window(Tkinter.Tk):
                 #plt.plot(Z[4], R[4], 'ro')
                 print("wtf")
                 if(self.SeparatePlots):
+                    plt.axes().set_aspect('equal', 'datalim')
                     plt.show(block=False)
                 print("boo")
             except IndexError:
@@ -209,6 +211,7 @@ class window(Tkinter.Tk):
         plt.quiver(Xbrzeg, Ybrzeg, VXbrzeg, VYbrzeg, alpha=1, angles='xy', scale_units='xy', color="green") #brzeg jako strzałki
         plot_format()
         if(self.SeparatePlots):
+            plt.axes().set_aspect('equal', 'datalim')
             plt.show()
     def OnLinieClick(self):
         simulation_data_file_name = askopenfilename()            #czyta nazwę pliku jako string
@@ -348,6 +351,7 @@ class window(Tkinter.Tk):
         plt.xlim(xmin,xmax)
         plt.ylim(ymin,ymax)
         plt.grid()
+        plt.axes().set_aspect('equal', 'datalim')
         plt.show()
     def OnSplineClick(self):
         data_file_name = askopenfilename()            #czyta nazwę pliku jako string
@@ -384,6 +388,7 @@ class window(Tkinter.Tk):
         plt.quiver(Xbrzeg,Ybrzeg, -spline_normal_delta_y, spline_normal_delta_x, alpha=1, angles='xy', scale_units='xy', color="blue")
         plot_format()
         if(self.SeparatePlots):
+            plt.axes().set_aspect('equal', 'datalim')
             plt.show()
     def OnShowClick(self):
         pass
